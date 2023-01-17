@@ -398,7 +398,9 @@ def _scan_declarative_assignment_stmt(
         else:
             for item in stmt.rvalue.items:
                 if isinstance(item, (NameExpr, StrExpr)):
-                    apply.apply_mypy_mapped_attr(cls, api, item, attributes)
+                    apply.apply_mypy_mapped_attr(
+                        cls, api, item, attributes, reset_statement_type=True
+                    )
 
     left_hand_mapped_type: Optional[Type] = None
     left_hand_explicit_type: Optional[ProperType] = None

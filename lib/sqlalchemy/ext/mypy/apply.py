@@ -44,6 +44,7 @@ def apply_mypy_mapped_attr(
     api: SemanticAnalyzerPluginInterface,
     item: Union[NameExpr, StrExpr],
     attributes: List[util.SQLAlchemyAttribute],
+    reset_statement_type: bool = False,
 ) -> None:
     if isinstance(item, NameExpr):
         name = item.name
@@ -90,6 +91,11 @@ def apply_mypy_mapped_attr(
     apply_type_to_mapped_statement(
         api, stmt, stmt.lvalues[0], left_hand_explicit_type, None
     )
+
+    if reset_statement_type:
+        stmt.type = api.named_type(
+            NAMED_TYPE_SQLA_MAPPED, [AnyType(TypeOfAny.special_form)]
+        )
 
 
 def re_apply_declarative_assignments(
@@ -225,6 +231,10 @@ def apply_type_to_mapped_statement(
     # the original right-hand side is maintained so it gets type checked
     # internally
     stmt.rvalue = util.expr_to_mapped_constructor(stmt.rvalue)
+
+    # this works for every test except the dataclasses one
+    if stmt.type is not None and python_type_for_type is not None:
+        stmt.type = python_type_for_type
 
 
 def add_additional_orm_attributes(
