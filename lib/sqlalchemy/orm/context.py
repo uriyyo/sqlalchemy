@@ -22,6 +22,8 @@ from typing import TYPE_CHECKING
 from typing import TypeVar
 from typing import Union
 
+from typing_extensions import Unpack
+
 from . import attributes
 from . import interfaces
 from . import loading
@@ -46,7 +48,7 @@ from ..sql import expression
 from ..sql import roles
 from ..sql import util as sql_util
 from ..sql import visitors
-from ..sql._typing import _TP
+from ..sql._typing import _TP, _TS
 from ..sql._typing import is_dml
 from ..sql._typing import is_insert_update
 from ..sql._typing import is_select_base
@@ -767,7 +769,7 @@ class ORMFromStatementCompileState(ORMCompileState):
             entity.setup_dml_returning_compile_state(self, adapter)
 
 
-class FromStatement(GroupedElement, Generative, TypedReturnsRows[_TP]):
+class FromStatement(GroupedElement, Generative, TypedReturnsRows[Unpack[_TS]]):
     """Core construct that represents a load of ORM objects from various
     :class:`.ReturnsRows` and other classes including:
 

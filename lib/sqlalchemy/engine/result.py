@@ -32,6 +32,9 @@ from typing import TYPE_CHECKING
 from typing import TypeVar
 from typing import Union
 
+from typing_extensions import TypeVarTuple
+from typing_extensions import Unpack
+
 from .row import Row
 from .row import RowMapping
 from .. import exc
@@ -72,6 +75,7 @@ _RawRowType = Tuple[Any, ...]
 _R = TypeVar("_R", bound=_RowData)
 _T = TypeVar("_T", bound=Any)
 _TP = TypeVar("_TP", bound=Tuple[Any, ...])
+_TS = TypeVarTuple("_TS")
 
 _InterimRowType = Union[_R, _RawRowType]
 """a catchall "anything" kind of return type that can be applied
@@ -890,7 +894,7 @@ class _WithKeys:
 SelfResult = TypeVar("SelfResult", bound="Result[Any]")
 
 
-class Result(_WithKeys, ResultInternal[Row[_TP]]):
+class Result(_WithKeys, ResultInternal[Row[Unpack[_TS]]]):
     """Represent a set of database results.
 
     .. versionadded:: 1.4  The :class:`_engine.Result` object provides a
@@ -1117,12 +1121,12 @@ class Result(_WithKeys, ResultInternal[Row[_TP]]):
         return self._column_slices(col_expressions)
 
     @overload
-    def scalars(self: Result[Tuple[_T]]) -> ScalarResult[_T]:
+    def scalars(self: Result[_T]) -> ScalarResult[_T]:
         ...
 
     @overload
     def scalars(
-        self: Result[Tuple[_T]], index: Literal[0]
+        self: Result[_T, Unpack[Tuple[Any, ...]]], index: Literal[0]
     ) -> ScalarResult[_T]:
         ...
 
@@ -1197,7 +1201,7 @@ class Result(_WithKeys, ResultInternal[Row[_TP]]):
         return MappingResult(self)
 
     @property
-    def t(self) -> TupleResult[_TP]:
+    def t(self) -> TupleResult[Tuple[Unpack[_TS]]]:
         """Apply a "typed tuple" typing filter to returned rows.
 
         The :attr:`_engine.Result.t` attribute is a synonym for
@@ -1208,7 +1212,7 @@ class Result(_WithKeys, ResultInternal[Row[_TP]]):
         """
         return self  # type: ignore
 
-    def tuples(self) -> TupleResult[_TP]:
+    def tuples(self) -> TupleResult[Tuple[Unpack[_TS]]]:
         """Apply a "typed tuple" typing filter to returned rows.
 
         This method returns the same :class:`_engine.Result` object
@@ -1243,15 +1247,15 @@ class Result(_WithKeys, ResultInternal[Row[_TP]]):
         """
         raise NotImplementedError()
 
-    def __iter__(self) -> Iterator[Row[_TP]]:
+    def __iter__(self) -> Iterator[Row[Unpack[_TS]]]:
         return self._iter_impl()
 
-    def __next__(self) -> Row[_TP]:
+    def __next__(self) -> Row[Unpack[_TS]]:
         return self._next_impl()
 
     def partitions(
         self, size: Optional[int] = None
-    ) -> Iterator[Sequence[Row[_TP]]]:
+    ) -> Iterator[Sequence[Row[Unpack[_TS]]]]:
         """Iterate through sub-lists of rows of the size given.
 
         Each list will be of the size given, excluding the last list to
@@ -1307,12 +1311,12 @@ class Result(_WithKeys, ResultInternal[Row[_TP]]):
             else:
                 break
 
-    def fetchall(self) -> Sequence[Row[_TP]]:
+    def fetchall(self) -> Sequence[Row[Unpack[_TS]]]:
         """A synonym for the :meth:`_engine.Result.all` method."""
 
         return self._allrows()
 
-    def fetchone(self) -> Optional[Row[_TP]]:
+    def fetchone(self) -> Optional[Row[Unpack[_TS]]]:
         """Fetch one row.
 
         When all rows are exhausted, returns None.
@@ -1334,7 +1338,7 @@ class Result(_WithKeys, ResultInternal[Row[_TP]]):
         else:
             return row
 
-    def fetchmany(self, size: Optional[int] = None) -> Sequence[Row[_TP]]:
+    def fetchmany(self, size: Optional[int] = None) -> Sequence[Row[Unpack[_TS]]]:
         """Fetch many rows.
 
         When all rows are exhausted, returns an empty list.
@@ -1355,7 +1359,7 @@ class Result(_WithKeys, ResultInternal[Row[_TP]]):
 
         return self._manyrow_getter(self, size)
 
-    def all(self) -> Sequence[Row[_TP]]:
+    def all(self) -> Sequence[Row[Unpack[_TS]]]:
         """Return all rows in a list.
 
         Closes the result set after invocation.   Subsequent invocations
@@ -1369,7 +1373,7 @@ class Result(_WithKeys, ResultInternal[Row[_TP]]):
 
         return self._allrows()
 
-    def first(self) -> Optional[Row[_TP]]:
+    def first(self) -> Optional[Row[Unpack[_TS]]]:
         """Fetch the first row or ``None`` if no row is present.
 
         Closes the result set and discards remaining rows.
@@ -1408,7 +1412,7 @@ class Result(_WithKeys, ResultInternal[Row[_TP]]):
             raise_for_second_row=False, raise_for_none=False, scalar=False
         )
 
-    def one_or_none(self) -> Optional[Row[_TP]]:
+    def one_or_none(self) -> Optional[Row[Unpack[_TS]]]:
         """Return at most one result or raise an exception.
 
         Returns ``None`` if the result has no rows.
@@ -1434,7 +1438,7 @@ class Result(_WithKeys, ResultInternal[Row[_TP]]):
         )
 
     @overload
-    def scalar_one(self: Result[Tuple[_T]]) -> _T:
+    def scalar_one(self: Result[_T]) -> _T:
         ...
 
     @overload
@@ -1459,7 +1463,7 @@ class Result(_WithKeys, ResultInternal[Row[_TP]]):
         )
 
     @overload
-    def scalar_one_or_none(self: Result[Tuple[_T]]) -> Optional[_T]:
+    def scalar_one_or_none(self: Result[_T]) -> Optional[_T]:
         ...
 
     @overload
@@ -1483,7 +1487,7 @@ class Result(_WithKeys, ResultInternal[Row[_TP]]):
             raise_for_second_row=True, raise_for_none=False, scalar=True
         )
 
-    def one(self) -> Row[_TP]:
+    def one(self) -> Row[Unpack[_TS]]:
         """Return exactly one row or raise an exception.
 
         Raises :class:`.NoResultFound` if the result returns no
@@ -1517,7 +1521,7 @@ class Result(_WithKeys, ResultInternal[Row[_TP]]):
         )
 
     @overload
-    def scalar(self: Result[Tuple[_T]]) -> Optional[_T]:
+    def scalar(self: Result[_T]) -> Optional[_T]:
         ...
 
     @overload
@@ -1542,7 +1546,7 @@ class Result(_WithKeys, ResultInternal[Row[_TP]]):
             raise_for_second_row=False, raise_for_none=False, scalar=True
         )
 
-    def freeze(self) -> FrozenResult[_TP]:
+    def freeze(self) -> FrozenResult[Unpack[_TS]]:
         """Return a callable object that will produce copies of this
         :class:`_engine.Result` when invoked.
 
@@ -1565,7 +1569,7 @@ class Result(_WithKeys, ResultInternal[Row[_TP]]):
 
         return FrozenResult(self)
 
-    def merge(self, *others: Result[Any]) -> MergedResult[_TP]:
+    def merge(self, *others: Result[Any]) -> MergedResult[Unpack[_TS]]:
         """Merge this :class:`_engine.Result` with other compatible result
         objects.
 
@@ -1815,9 +1819,6 @@ class ScalarResult(FilterResult[_R]):
         return self._only_one_row(
             raise_for_second_row=True, raise_for_none=True, scalar=False
         )
-
-
-SelfTupleResult = TypeVar("SelfTupleResult", bound="TupleResult[Any]")
 
 
 class TupleResult(FilterResult[_R], util.TypingOnly):
@@ -2138,7 +2139,7 @@ class MappingResult(_WithKeys, FilterResult[RowMapping]):
         )
 
 
-class FrozenResult(Generic[_TP]):
+class FrozenResult(Generic[Unpack[_TS]]):
     """Represents a :class:`_engine.Result` object in a "frozen" state suitable
     for caching.
 
@@ -2179,7 +2180,7 @@ class FrozenResult(Generic[_TP]):
 
     data: Sequence[Any]
 
-    def __init__(self, result: Result[_TP]):
+    def __init__(self, result: Result[Unpack[_TS]]):
         self.metadata = result._metadata._for_freeze()
         self._source_supports_scalars = result._source_supports_scalars
         self._attributes = result._attributes
@@ -2196,7 +2197,7 @@ class FrozenResult(Generic[_TP]):
             return [list(row) for row in self.data]
 
     def with_new_rows(
-        self, tuple_data: Sequence[Row[_TP]]
+        self, tuple_data: Sequence[Row[Unpack[_TS]]]
     ) -> FrozenResult[_TP]:
         fr = FrozenResult.__new__(FrozenResult)
         fr.metadata = self.metadata
@@ -2209,8 +2210,8 @@ class FrozenResult(Generic[_TP]):
             fr.data = tuple_data
         return fr
 
-    def __call__(self) -> Result[_TP]:
-        result: IteratorResult[_TP] = IteratorResult(
+    def __call__(self) -> Result[Unpack[_TS]]:
+        result: IteratorResult[Unpack[_TS]] = IteratorResult(
             self.metadata, iter(self.data)
         )
         result._attributes = self._attributes
@@ -2218,7 +2219,7 @@ class FrozenResult(Generic[_TP]):
         return result
 
 
-class IteratorResult(Result[_TP]):
+class IteratorResult(Result[Unpack[_TS]]):
     """A :class:`_engine.Result` that gets data from a Python iterator of
     :class:`_engine.Row` objects or similar row-like data.
 
@@ -2310,7 +2311,7 @@ SelfChunkedIteratorResult = TypeVar(
 )
 
 
-class ChunkedIteratorResult(IteratorResult[_TP]):
+class ChunkedIteratorResult(IteratorResult[Unpack[_TS]]):
     """An :class:`_engine.IteratorResult` that works from an
     iterator-producing callable.
 
@@ -2369,7 +2370,7 @@ class ChunkedIteratorResult(IteratorResult[_TP]):
         return super()._fetchmany_impl(size=size)
 
 
-class MergedResult(IteratorResult[_TP]):
+class MergedResult(IteratorResult[Unpack[_TS]]):
     """A :class:`_engine.Result` that is merged from any number of
     :class:`_engine.Result` objects.
 
@@ -2383,7 +2384,7 @@ class MergedResult(IteratorResult[_TP]):
     rowcount: Optional[int]
 
     def __init__(
-        self, cursor_metadata: ResultMetaData, results: Sequence[Result[_TP]]
+        self, cursor_metadata: ResultMetaData, results: Sequence[Result[Unpack[_TS]]]
     ):
         self._results = results
         super().__init__(

@@ -39,6 +39,8 @@ from typing import TYPE_CHECKING
 from typing import TypeVar
 from typing import Union
 
+from typing_extensions import Unpack
+
 from . import cache_key
 from . import coercions
 from . import operators
@@ -49,6 +51,7 @@ from . import visitors
 from ._typing import _ColumnsClauseArgument
 from ._typing import _no_kw
 from ._typing import _TP
+from ._typing import _TS
 from ._typing import is_column_element
 from ._typing import is_select_statement
 from ._typing import is_subquery
@@ -271,7 +274,7 @@ class ExecutableReturnsRows(Executable, ReturnsRows):
     """base for executable statements that return rows."""
 
 
-class TypedReturnsRows(ExecutableReturnsRows, Generic[_TP]):
+class TypedReturnsRows(ExecutableReturnsRows, Generic[Unpack[_TS]]):
     """base for executable statements that return rows."""
 
 
@@ -5123,7 +5126,7 @@ class Select(
     HasCompileState,
     _SelectFromElements,
     GenerativeSelect,
-    TypedReturnsRows[_TP],
+    TypedReturnsRows[Unpack[_TS]],
 ):
     """Represents a ``SELECT`` statement.
 

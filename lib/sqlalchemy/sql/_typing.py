@@ -18,6 +18,8 @@ from typing import TYPE_CHECKING
 from typing import TypeVar
 from typing import Union
 
+from typing_extensions import TypeVarTuple
+
 from . import roles
 from .. import exc
 from .. import util
@@ -153,6 +155,7 @@ _TypedColumnClauseArgument = Union[
 ]
 
 _TP = TypeVar("_TP", bound=Tuple[Any, ...])
+_TS = TypeVarTuple("_TS")
 
 _T0 = TypeVar("_T0", bound=Any)
 _T1 = TypeVar("_T1", bound=Any)

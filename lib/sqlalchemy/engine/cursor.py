@@ -30,6 +30,9 @@ from typing import TYPE_CHECKING
 from typing import TypeVar
 from typing import Union
 
+from typing_extensions import TypeVarTuple
+from typing_extensions import Unpack
+
 from .result import IteratorResult
 from .result import MergedResult
 from .result import Result
@@ -72,7 +75,7 @@ if typing.TYPE_CHECKING:
 
 
 _T = TypeVar("_T", bound=Any)
-
+_TS = TypeVarTuple("_TS")
 
 # metadata entry tuple indexes.
 # using raw tuple is faster than namedtuple.
@@ -1375,7 +1378,7 @@ def null_dml_result() -> IteratorResult[Any]:
     return it
 
 
-class CursorResult(Result[_T]):
+class CursorResult(Result[Unpack[_TS]]):
     """A Result that is representing state from a DBAPI cursor.
 
     .. versionchanged:: 1.4  The :class:`.CursorResult``

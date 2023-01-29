@@ -29,12 +29,14 @@ from typing import Type
 from typing import TYPE_CHECKING
 from typing import TypeVar
 from typing import Union
+from typing_extensions import Unpack
 
 from . import coercions
 from . import roles
 from . import util as sql_util
 from ._typing import _no_kw
 from ._typing import _TP
+from ._typing import _TS
 from ._typing import is_column_element
 from ._typing import is_named_from_clause
 from .base import _entity_namespace_key
@@ -1366,7 +1368,7 @@ class Insert(ValuesBase):
             ...
 
 
-class ReturningInsert(Insert, TypedReturnsRows[_TP]):
+class ReturningInsert(Insert, TypedReturnsRows[Unpack[_TS]]):
     """Typing-only class that establishes a generic type form of
     :class:`.Insert` which tracks returned column types.
 
@@ -1654,7 +1656,7 @@ class Update(DMLWhereBase, ValuesBase):
             ...
 
 
-class ReturningUpdate(Update, TypedReturnsRows[_TP]):
+class ReturningUpdate(Update, TypedReturnsRows[Unpack[_TS]]):
     """Typing-only class that establishes a generic type form of
     :class:`.Update` which tracks returned column types.
 
@@ -1796,7 +1798,7 @@ class Delete(DMLWhereBase, UpdateBase):
             ...
 
 
-class ReturningDelete(Update, TypedReturnsRows[_TP]):
+class ReturningDelete(Update, TypedReturnsRows[Unpack[_TS]]):
     """Typing-only class that establishes a generic type form of
     :class:`.Delete` which tracks returned column types.
 

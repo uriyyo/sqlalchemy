@@ -27,6 +27,8 @@ from typing import Type
 from typing import TypeVar
 from typing import Union
 
+from typing_extensions import Unpack
+
 from .interfaces import BindTyping
 from .interfaces import ConnectionEventsTarget
 from .interfaces import DBAPICursor
@@ -67,7 +69,7 @@ if typing.TYPE_CHECKING:
     from ..pool import Pool
     from ..pool import PoolProxiedConnection
     from ..sql import Executable
-    from ..sql._typing import _InfoType
+    from ..sql._typing import _InfoType, _TS
     from ..sql.compiler import Compiled
     from ..sql.ddl import ExecutableDDLElement
     from ..sql.ddl import SchemaDropper
@@ -1256,7 +1258,7 @@ class Connection(ConnectionEventsTarget, inspection.Inspectable["Inspector"]):
     @overload
     def scalar(
         self,
-        statement: TypedReturnsRows[Tuple[_T]],
+        statement: TypedReturnsRows[_T],
         parameters: Optional[_CoreSingleExecuteParams] = None,
         *,
         execution_options: Optional[CoreExecuteOptionsParameter] = None,
@@ -1305,7 +1307,7 @@ class Connection(ConnectionEventsTarget, inspection.Inspectable["Inspector"]):
     @overload
     def scalars(
         self,
-        statement: TypedReturnsRows[Tuple[_T]],
+        statement: TypedReturnsRows[_T],
         parameters: Optional[_CoreSingleExecuteParams] = None,
         *,
         execution_options: Optional[CoreExecuteOptionsParameter] = None,
@@ -1350,11 +1352,11 @@ class Connection(ConnectionEventsTarget, inspection.Inspectable["Inspector"]):
     @overload
     def execute(
         self,
-        statement: TypedReturnsRows[_T],
+        statement: TypedReturnsRows[Unpack[_TS]],
         parameters: Optional[_CoreAnyExecuteParams] = None,
         *,
         execution_options: Optional[CoreExecuteOptionsParameter] = None,
-    ) -> CursorResult[_T]:
+    ) -> CursorResult[Unpack[_TS]]:
         ...
 
     @overload
